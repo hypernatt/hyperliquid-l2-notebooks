@@ -73,12 +73,24 @@ def test_no_wallet_address_is_published():
 def test_the_notebook_text_cites_no_result():
     """Markdown cells explain; numbers come from the code cells. Digits allowed in prose: the fixed facts below."""
     allowed = re.compile(
-        r"20 (price )?levels|24-hour|SHA-256|1e-5|at least 1 BTC|[Cc]hapter \d|^#+ \d\.|^\d\. |`[^`]*`|\(\.\./[^)]*\)|https?://\S+", re.MULTILINE)
+        r"20 (price )?levels|24-hour|SHA-256|CC BY 4\.0|1e-5|at least 1 BTC|[Cc]hapter \d|^#+ \d\.|^\d\. |`[^`]*`|"
+        r"\(\.\./[^)]*\)|https?://\S+", re.MULTILINE)
     for cell in notebook_cells():
         if cell["cell_type"] != "markdown":
             continue
         text = allowed.sub("", "".join(cell["source"]))
         assert not re.search(r"\d", text), text[:200]
+
+
+def test_the_notebook_and_the_readme_carry_the_same_badges():
+    """Five badges: tests, DOI, data licence, code licence, Hugging Face copy; every one is a link."""
+    readme = (ROOT / "README.md").read_text(encoding="utf-8").splitlines()
+    line = next(row for row in readme if row.startswith("[![CI]("))
+    assert line.count("[![") == 5 and line.count("](https://") == 10
+    first_cell = "".join(notebook_cells()[0]["source"])
+    assert line in first_cell
+    summary = json.loads((ROOT / "results" / "summary.json").read_text(encoding="utf-8"))
+    assert f"https://doi.org/{summary['release']['doi']})" in line
 
 
 def test_the_notebook_is_executed_and_clean():

@@ -9,6 +9,21 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 VIEWS = ("REF", "M2", "M5", "AGG4")
+REPO = "https://github.com/hypernatt/hyperliquid-l2-notebooks"
+HUGGING_FACE = "https://huggingface.co/datasets/hypernatt/hyperliquid-l2-sample"
+
+
+def badges(doi: str) -> str:
+    """One line of badges: tests, DOI of the sample, licences, Hugging Face copy. Same line in the notebook."""
+    items = [
+        ("CI", f"{REPO}/actions/workflows/ci.yml/badge.svg", f"{REPO}/actions/workflows/ci.yml"),
+        ("DOI", f"https://zenodo.org/badge/DOI/{doi}.svg", f"https://doi.org/{doi}"),
+        ("Data licence: CC BY 4.0", "https://img.shields.io/badge/data-CC%20BY%204.0-2a78d6",
+         "https://creativecommons.org/licenses/by/4.0/"),
+        ("Code licence: MIT", "https://img.shields.io/badge/code-MIT-2a78d6", f"{REPO}/blob/main/LICENSE"),
+        ("Hugging Face: sample", "https://img.shields.io/badge/Hugging%20Face-sample-2a78d6", HUGGING_FACE),
+    ]
+    return " ".join(f"[![{alt}]({image})]({link})" for alt, image, link in items)
 
 
 def render(summary: dict) -> str:
@@ -26,6 +41,8 @@ def render(summary: dict) -> str:
         for size, row in sorted(cost.items(), key=lambda kv: float(kv[0].split()[0])))
 
     return f"""# Hyperliquid L2 notebooks
+
+{badges(rel['doi'])}
 
 Reproducible analyses of the free 24-hour sample of the [HyperNatt Hyperliquid L2 archive](https://hypernatt.com/datasets).
 
