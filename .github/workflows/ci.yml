@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+      - name: Install the pinned dependencies
+        run: pip install -r requirements-dev.txt
+      - name: Unit tests
+        run: pytest -q
+      - name: Reuse the downloaded sample (it is verified again by its SHA-256)
+        uses: actions/cache@v4
+        with:
+          path: data
+          key: sample-${{ hashFiles('results/summary.json') }}
+      - name: Execute the notebook and compare its results with the committed ones
+        run: python tools/run_notebook.py --check
+      - name: README is the output of tools/render_readme.py
+        run: python tools/render_readme.py --check
